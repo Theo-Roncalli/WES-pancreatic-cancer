@@ -52,10 +52,22 @@ do
     echo -e "${BLUE}Converting ${samfile} into ${bamfile}...${NC}";
     samtools view -S -b ${samfile} > ${bamfile};            # converting SAM to BAM
     echo -e "\n${BLUE}Checking Mapping Stats...${NC}";
-    samtools flagstat ${bamfile};                           # checking statistiques
+    samtools flagstat ${bamfile};                           # checking statistics
     echo -e "\n${BLUE}Sorting ${bamfile}...${NC}";
     samtools sort ${bamfile} > ${sorted_bamfile};           # sorting BAM file
     echo -e "\n${BLUE}Indexing ${sorted_bamfile}...${NC}";
     samtools index ${sorted_bamfile};                       # indexing BAM file
+    echo -e "${GREEN}Done.${NC}\n";
+done
+
+# What fraction of reads were mapped ? Around 99.98%
+# What fraction of pairs were properly mapped? Around 0%
+
+gunzip ${index}/chr16.fa.gz
+for sorted_bamfile in ${mapping}/*.sorted.bam
+do
+    mpileup_file=${bamfile%.sorted.bam}.mpileup;
+    echo -e "${BLUE}Creating ${mpileup_file}...${NC}";
+    samtools mpileup -B -A -f ${index}/chr16.fa ${sorted_bamfile} > ${mpileup_file}; # converting to mpileup
     echo -e "${GREEN}Done.${NC}\n";
 done
