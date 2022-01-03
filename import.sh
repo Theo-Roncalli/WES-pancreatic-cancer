@@ -3,14 +3,17 @@
 # Directory parameters
 
 reads=Data/Reads
+trimming=Data/Trimming
 genome=Data/Genome
+index=Data/Index
+figures_reads=Figures/Reads
+figures_trimming=Figures/Trimming
 
 # Url parameters
 
 genome_url=http://hgdownload.soe.ucsc.edu/goldenPath/hg19/chromosomes/chr16.fa.gz
-annotation_url=
 
-# Colors
+# Color parameters
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -43,22 +46,45 @@ do
 	paired_file_with_path=${read1_file%_r1F.fastq};
     if [ $(grep ^+$ ${paired_file_with_path}_r1F.fastq | wc -l) == $(grep ^+$ ${paired_file_with_path}_r2F.fastq | wc -l) ]
     then
-        echo -e "${GREEN}Number of reads between the paired files ${paired_file_with_path}_r1F.fastq and ${paired_file_with_path}_r2F.fastq are the same."
+        echo -e "${GREEN}Number of reads between the paired files ${paired_file_with_path}_r1F.fastq and ${paired_file_with_path}_r2F.fastq are the same.${NC}"
     else
-        echo -e "${RED}Error: number of reads between the paired files ${paired_file_with_path}_r1F.fastq and ${paired_file_with_path}_r2F.fastq are not the same."
+        echo -e "${RED}Error: number of reads between the paired files ${paired_file_with_path}_r1F.fastq and ${paired_file_with_path}_r2F.fastq are not the same.${NC}"
         exit 1;
     fi
 done
+echo -e "\n"
 
-# Step 2: download reference genome
+# Step 2: Quality control + Reads cleaning
 
-mkdir ${genome} -p
+mkdir -p ${figures_reads}
+echo "Creation of the fastqc files on raw reads."
+fastqc -o ${figures_reads} -f fastq ${reads}/*.fastq -q
+echo "Done."
+
+# Trimming procedure (Elimination of low quality sequences at the end of reads)
+# conda install -c bioconda trimmomatic
+
+mkdir -p ${trimming}
+
+for read1_file in ${reads}/*_r1F.fastq
+do
+	paired_file_with_path=${read1_file%_r1F.fastq};
+	paired_file_without_path=${paired_file_with_path#${reads}/};
+	echo "Trimming ${paired_file_without_path%.sampled}...";
+    echo ${paired_file_with_path}_r1F.fastq
+	trimmomatic PE ${paired_file_with_path}_r1F.fastq ${paired_file_with_path}_r2F.fastq -baseout ${trimming}/${paired_file_without_path}.fastq LEADING:20 TRAILING:20 MINLEN:50 -quiet
+	echo "Done."
+done
+
+# Step 3: Download reference genome
+
+mkdir ${index} -p
 echo "Downloading genome..."
-wget ${genome_url} -P ${genome} -q
+wget ${genome_url} -P ${index} -q
 
-# Step 3: creation of the index
+# Step 4: Creation of the index
 
 #### Index (BWA) ####
 mkdir ${index} -p
-bwa index -a bwtsw ${genome}/chr16.fa.gz
-mv ${genome}/*.fa.gz.+([A-Za-z]) ${index}/
+bwa index -a bwtsw ${index}/chr16.fa.gz
+# mv ${genome}/*.fa.gz.+([A-Za-z]) ${index}/
