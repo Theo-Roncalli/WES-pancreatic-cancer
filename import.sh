@@ -3,10 +3,12 @@
 # Directory parameters
 
 reads=Data/Reads
+genome=Data/Genome
 
 # Url parameters
 
-reads_url="'https://docs.google.com/uc?export=download&id=1DM9g8OulE1ScBk-HoaREfUZs6gurtkBe'"
+genome_url=http://hgdownload.soe.ucsc.edu/goldenPath/hg19/chromosomes/chr16.fa.gz
+annotation_url=
 
 # Colors
 
@@ -33,7 +35,7 @@ do
 	grep ^+$ ${file} | echo "$(wc -l) $(du -h ${file})" | awk '{print $3 " Reads:" $1 " Size:" $2}';
 done
 
-# Check if reads numbers are the same between paired files
+# Check if read numbers are the same between paired files
 # Exit if not the case
 echo -e "\n"
 for read1_file in ${reads}/*_r1F.fastq
@@ -47,3 +49,16 @@ do
         exit 1;
     fi
 done
+
+# Step 2: download reference genome
+
+mkdir ${genome} -p
+echo "Downloading genome..."
+wget ${genome_url} -P ${genome} -q
+
+# Step 3: creation of the index
+
+#### Index (BWA) ####
+mkdir ${index} -p
+bwa index -a bwtsw ${genome}/chr16.fa.gz
+mv ${genome}/*.fa.gz.+([A-Za-z]) ${index}/
