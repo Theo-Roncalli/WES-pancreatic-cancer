@@ -18,3 +18,12 @@ echo "Unarchiving reads..."
 tar -zxf ${reads}/patient7.tar.gz -C ${reads}
 mv ${reads}/patient7.exome/* ${reads} && rm -r ${reads}/patient7.exome && rm ${reads}/patient7.tar.gz # Cleaning 'reads' repository
 gunzip -q ${reads}/*.fastq.gz
+
+# check file sizes and estimate read numbers for each sample
+
+echo "--------Number of reads and size of each file--------"
+for file in ${reads}/*.fastq
+do
+	grep ^+$ ${file} | echo "$(wc -l) $(du -h ${file})" | awk '{print $3 " Reads:" $1 " Size:" $2}';
+done
+
