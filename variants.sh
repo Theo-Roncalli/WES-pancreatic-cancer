@@ -18,6 +18,7 @@ GREEN='\033[1;32m'
 BLUE='\033[1;34m'
 NC='\033[0m'
 
+# Checking if the install.sh script has been running before.
 if [ ! -d ${trimming} ] || [ ! -d ${index} ]
 then
     echo -e "${RED}Import data must be done before running the variants.sh script.";
@@ -47,7 +48,6 @@ done
 # -A INT        Matching score. 
 # -E INT        Gap extension penalty. A gap of length k costs O + k*E (i.e. -O is for opening a zero-length gap).
 # -M            Mark shorter split hits as secondary (for Picard compatibility)
-# -O INT        Gap open penalty.
 
 # Step 2: Processing
 
@@ -66,8 +66,8 @@ do
     echo -e "${GREEN}Done.${NC}\n";
 done
 
-# What fraction of reads were mapped ? Around 99.98%
-# What fraction of pairs were properly mapped? Around 0%
+# What fraction of reads are mapped ? Almost 100%
+# What fraction of pairs are properly mapped? Around 99.5%
 
 gunzip ${index}/chr16.fa.gz
 for sorted_bamfile in ${mapping}/*.sorted.bam
@@ -82,7 +82,23 @@ done
 
 # sudo apt install varscan
 mkdir ${variants} -p
-# varscan somatic ${mapping}/*-N-*.pileup ${mapping}/*-T-*.pileup ${variants}
-varscan somatic ${mapping}/*-N-WEX-chr16.pileup ${mapping}/*-T-WEX-chr16.pileup ${variants}
+echo -e "${BLUE}Running varscan somatic...${NC}";
+varscan somatic ${mapping}/TCRBOA7-N-WEX-chr16.pileup ${mapping}/TCRBOA7-T-WEX-chr16.pileup ${variants}/TCRBOA7-T-WEX-chr16
+echo -e "${GREEN}Done.${NC}\n";
+# By using pileup files from a tumor-normal pair, varscan somatic gives some information about mutations.
+# Two files are created: Variants.snp for single nucleotide polymorphism (SNP)
+# and Variants.indel for insertions or deletions (indels).
+# In these files, we can see the loss of heterozygosity (LOH), germline variants and somatic mutations.
 
-exit
+# Checking if the script has been executed successfully.
+if [ -f ${variants}/TCRBOA7-T-WEX-chr16.snp ] && [ -f ${variants}/TCRBOA7-T-WEX-chr16.indel ]
+then
+    echo -e "${GREEN}Success!";
+	echo -e "You can find information about mutations by using the following files:"
+    echo -e "${variants}/TCRBOA7-T-WEX-chr16.snp and ${variants}/TCRBOA7-T-WEX-chr16.indel${NC}"
+    exit 0
+else
+    echo -e "\n${RED}The creation of files containing information about mutations has not been successully performed."
+	echo -e "Please retry.${NC}"
+    exit 1
+fi
