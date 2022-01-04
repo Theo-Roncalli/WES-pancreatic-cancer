@@ -97,7 +97,7 @@ echo -e "${GREEN}Done.${NC}"
 # Step 4: Creation of the index
 
 #### Index (BWA) ####
-# sudo apt install bwa
+# For installing bwa, please type: sudo apt install bwa
 mkdir ${index} -p
 echo -e "\n${BLUE}Creation of the BWA index...${NC}"
 bwa index -a bwtsw ${index}/chr16.fa.gz
