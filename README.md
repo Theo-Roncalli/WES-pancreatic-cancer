@@ -1,11 +1,11 @@
 # New Generation Sequencing (NGS)
 
-This work focuses on the study of [Becnel et al. (2016)](https://www.nature.com/articles/sdata201610) who share cancer genomic data. In our work, we are interesting into mutations that could induce pancreatic cancer. Here, we work on data from patient ID TCRBOA7. In order to reduce time computation, we used only data about chromosome 16.
+This work focuses on the study of [Becnel et al. (2016)](https://www.nature.com/articles/sdata201610) who share cancer genomic data. In our work, we are interesting into mutations that could induce pancreatic cancer. Here, we work on data from patient ID TCRBOA7. In order to reduce time computation, we only used data on chromosome 16.
 
 ## Dependencies
 
 The pipeline runs on bash.
-Some package are required for launching some commands such as fastqc, trimmomatic and .
+Some package are required for launching some commands such as fastqc, trimmomatic, bwa and varscan.
 
 ```bash
 sudo apt install fastqc                 # For using fastqc
@@ -20,7 +20,7 @@ A machine with at least 8 GB of **FREE** RAM (to create the index and the mappin
 
 ## Executing The Pipeline
 
-The pipeline is used for detecting variants on whole exome sequencing (WES) data using paired-end files: the first two for tumor tissues and the other two for adjacent normal tissues. Here, it is used on a patient suffering from pancreatic cancer. Two files are generated at the end of the exome sequencing pipeline: a file with the single nucleotide polymorphism (SNP) and a file with the insertions/deletions (indels). These files are available in the repository _Data/Variants_. The steps for generating these files are the followings.
+The pipeline is used for detecting variants on whole exome sequencing (WES) data using paired-end files: the first two for tumor tissues and the other two for adjacent normal tissues. Here, it is used on a patient suffering from pancreatic cancer. Two files are generated at the end of the exome sequencing pipeline: a file with the single nucleotide polymorphisms (SNP) and a file with the insertions/deletions (indels). These files are available in the repository _Data/Variants_. The steps for generating these files are the followings.
 
 1. Clone the Github repository to your machine
 ```bash
