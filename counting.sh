@@ -5,9 +5,9 @@
 # reads=Data/Reads
 trimming=Data/Trimming
 index=Data/Index
-# mapping=Data/Mapping
-# counts=Data/Counts
 mapping=Data/Mapping
+# counts=Data/Counts
+variants=Data/Variants
 
 # Performance parameters
 
@@ -28,11 +28,11 @@ for read1_file in ${trimming}/*1P.fastq
 do
 	paired_file_with_path=${read1_file%_1P.fastq};
 	paired_file_without_path=${paired_file_with_path#${trimming}/};
-	echo -e "${BLUE}Downloading SAM file with ${paired_file_without_path}...${NC}\n";
+	echo -e "${BLUE}Downloading SAM file with ${paired_file_without_path}...${NC}";
     bwa mem -M -t ${nb_cpus_mapping} -A 2 -E 1 \
         ${index}/chr16.fa.gz \
         ${paired_file_with_path}_1P.fastq \
-        ${paired_file_with_path}_1P.fastq \
+        ${paired_file_with_path}_2P.fastq \
         -o ${mapping}/${paired_file_without_path}.sam;
     echo -e "${GREEN}Done.${NC}\n";
 done
@@ -42,6 +42,7 @@ done
 # -A INT        Matching score. 
 # -E INT        Gap extension penalty. A gap of length k costs O + k*E (i.e. -O is for opening a zero-length gap).
 # -M            Mark shorter split hits as secondary (for Picard compatibility)
+# -O INT        Gap open penalty.
 
 # Step 2: Processing
 
@@ -66,8 +67,15 @@ done
 gunzip ${index}/chr16.fa.gz
 for sorted_bamfile in ${mapping}/*.sorted.bam
 do
-    mpileup_file=${bamfile%.sorted.bam}.mpileup;
-    echo -e "${BLUE}Creating ${mpileup_file}...${NC}";
-    samtools mpileup -B -A -f ${index}/chr16.fa ${sorted_bamfile} > ${mpileup_file}; # converting to mpileup
+    pileup_file=${sorted_bamfile%.sorted.bam}.pileup;
+    echo -e "${BLUE}Creating ${pileup_file}...${NC}";
+    samtools mpileup -B -A -f ${index}/chr16.fa ${sorted_bamfile} > ${pileup_file}; # converting to pileup
     echo -e "${GREEN}Done.${NC}\n";
 done
+
+# Step 3: Calling somatic variants with Varscan
+
+# sudo apt install varscan
+mkdir ${variants} -p
+# varscan somatic ${mapping}/*-N-*.pileup ${mapping}/*-T-*.pileup ${variants}
+varscan somatic Data/Mapping/TCRBOA7-N-WEX-chr16.pileup Data/Mapping/TCRBOA7-T-WEX-chr16.pileup ${variants}
