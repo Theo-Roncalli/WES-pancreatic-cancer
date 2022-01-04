@@ -2,11 +2,9 @@
 
 # Directory parameters
 
-# reads=Data/Reads
 trimming=Data/Trimming
 index=Data/Index
 mapping=Data/Mapping
-# counts=Data/Counts
 variants=Data/Variants
 
 # Performance parameters
@@ -19,6 +17,13 @@ RED='\033[1;31m'
 GREEN='\033[1;32m'
 BLUE='\033[1;34m'
 NC='\033[0m'
+
+if [ ! -d ${trimming} ] || [ ! -d ${index} ]
+then
+    echo -e "${RED}Import data must be done before running the variants.sh script.";
+    echo -e "Please run install.sh script before with the command: \033[3;31mbash install.sh${NC}";
+    exit 1
+fi
 
 # Step 1: Mapping
 
@@ -78,4 +83,6 @@ done
 # sudo apt install varscan
 mkdir ${variants} -p
 # varscan somatic ${mapping}/*-N-*.pileup ${mapping}/*-T-*.pileup ${variants}
-varscan somatic Data/Mapping/TCRBOA7-N-WEX-chr16.pileup Data/Mapping/TCRBOA7-T-WEX-chr16.pileup ${variants}
+varscan somatic ${mapping}/*-N-WEX-chr16.pileup ${mapping}/*-T-WEX-chr16.pileup ${variants}
+
+exit
